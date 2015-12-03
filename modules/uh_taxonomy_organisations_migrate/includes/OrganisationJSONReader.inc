@@ -154,8 +154,6 @@ class OrganisationJSONReader extends MigrateJSONReader {
   protected function fetchOrganisation() {
     $content = file_get_contents($this->url);
     if (($json = json_decode($content))) {
-      // Root has no parent
-      $json->parent = NULL;
       return $json;
     }
     else {
