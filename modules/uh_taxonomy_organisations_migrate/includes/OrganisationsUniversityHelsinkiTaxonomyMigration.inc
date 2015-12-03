@@ -33,7 +33,14 @@ class OrganisationsUniversityHelsinkiTaxonomyMigration extends Migration {
     $this->source = new MigrateSourceJSON(
       'https://od.helsinki.fi/orgrek/opetus.json',
       'id',
-      array('name_en', 'name_fi', 'name_sv', 'code', 'type', 'abbreviation', 'billing_code', 'parent'),
+      array(
+        'code' => 'Organisation code',
+        'name_en' => 'Name in english',
+        'type' => 'Type of organisation',
+        'abbreviation' => 'Abbreviation of organisation',
+        'billing_code' => 'Billing code of organisation',
+        'parent_id' => 'Parent ID of organisation this belongs to.',
+      ),
       array('reader_class' => 'OrganisationJSONReader')
     );
     $this->destination = new TaxonomyMigrateDestinationTerm('organisations_of_university_of_helsinki');
@@ -41,12 +48,17 @@ class OrganisationsUniversityHelsinkiTaxonomyMigration extends Migration {
     // Set field mapping
     $this->addFieldMapping('name', 'name_en');
     $this->addFieldMapping('field_ouh_code', 'code');
+    $this->addFieldMapping('field_ouh_code:language')->defaultValue(LANGUAGE_NONE);
     $this->addFieldMapping('field_ouh_type', 'type');
+    $this->addFieldMapping('field_ouh_type:language')->defaultValue(LANGUAGE_NONE);
     $this->addFieldMapping('field_ouh_abbreviation', 'abbreviation');
+    $this->addFieldMapping('field_ouh_abbreviation:language')->defaultValue(LANGUAGE_NONE);
     $this->addFieldMapping('field_ouh_billing_code', 'billing_code');
+    $this->addFieldMapping('field_ouh_billing_code:language')->defaultValue(LANGUAGE_NONE);
+    $this->addFieldMapping('parent', 'parent')->sourceMigration($this->getMachineName());
 
     // These fields are not migrated
-    $this->addUnmigratedDestinations(array('description'));
+    $this->addUnmigratedDestinations(array('name_fi', 'name_sv', 'description', 'parent_name', 'format', 'weight', 'path'));
 
   }
 }
