@@ -19,4 +19,4 @@ possibility to change the open source license if needed.
 Please post your question to doo-projekti@helsinki.fi
 
 ## License
-This software is developed under [GPL v3](LICENSE.md).
+This software is developed under [GPL v3](LICENSE.txt).
