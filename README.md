@@ -1,6 +1,9 @@
 # University of Helsinki, Organisations
 
-This is a Drupal 7 module for providing taxonomy vocabulary of organisations of [University of Helsinki](http://www.helsinki.fi).
+Provides taxonomy vocabulary of organisations of [University of Helsinki](http://www.helsinki.fi).
+
+Drupal 7 module development currently happens in 7.x-1.x branch. No Drupal 8
+branch so far.
 
 ## Getting Started
 We encourage you to participate in this open source project. Please make Pull
@@ -14,3 +17,6 @@ possibility to change the open source license if needed.
 
 ## Questions
 Please post your question to doo-projekti@helsinki.fi
+
+## License
+This software is developed under [GPL v3](LICENSE.md).

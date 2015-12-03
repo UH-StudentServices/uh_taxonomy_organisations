@@ -1,9 +1,0 @@
-name = University of Helsinki, Organisations Migrate
-description = Provides migration for importing organisations to taxonomy vocabulary.
-core = 7.x
-package = University of Helsinki
-version = 7.x-1.x-dev
-files[] = includes/OrganisationJSONReader.inc
-files[] = includes/OrganisationsUniversityHelsinkiTaxonomyMigration.inc
-dependencies[] = migrate
-dependencies[] = uh_taxonomy_organisations
