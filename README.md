@@ -2,6 +2,12 @@
 
 This is a Drupal 7 module for providing taxonomy vocabulary of organisations of [University of Helsinki](http://www.helsinki.fi).
 
+## Latest changes
+* Added main feature module which contains the vocabulary and the fields
+* Added submodule which imports whole organisation hierarchy using migrate module
+
+See more changes in [CHANGELOG.md](CHANGELOG.md).
+
 ## Getting Started
 We encourage you to participate in this open source project. Please make Pull
 Requests, Bug Reports, ideas, (security) code reviews or any kind of positive
