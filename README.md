@@ -3,8 +3,8 @@
 This is a Drupal 7 module for providing taxonomy vocabulary of organisations of [University of Helsinki](http://www.helsinki.fi).
 
 ## Latest changes
-* Added main feature module which contains the vocabulary and the fields
-* Added submodule which imports whole organisation hierarchy using migrate module
+* Added function for loading taxonomy terms by given organisation code, designed
+  to be used by another modules.
 
 See more changes in [CHANGELOG.md](CHANGELOG.md).
 
@@ -17,6 +17,13 @@ Before adding suggestions to the main source repository we will send you a
 agreement to give to ownership of the code to [University of Helsinki](http://www.helsinki.fi).
 That way we can keep the ownership of the main trunk code clear and have the
 possibility to change the open source license if needed.
+
+### Examples
+```php
+// Load open university taxonomy term and print out its billing code
+$term = uh_taxonomy_organisations_load_by_code('H930');
+echo $term->field_ouh_billing_code[LANGUAGE_NONE][0]['value'];
+```
 
 ## Questions
 Please post your question to doo-projekti@helsinki.fi

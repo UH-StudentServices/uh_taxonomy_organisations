@@ -1,5 +1,36 @@
 <?php
 /**
  * @file
- * Drupal needs this blank file.
+ * This is module file for "University of Helsinki, Organisations" module.
+ *
+ * @license GPL, or GNU General Public License, version 3
+ * @license http://opensource.org/licenses/GPL-3.0
+ * @see README.md how to contribute to this project
  */
+
+/**
+ * Load taxonomy term by organisation code. This may be used by other modules
+ * and it is not used internally so far.
+ *
+ * @code
+ * // Load open university taxonomy term and print out its billing code
+ * $term = uh_taxonomy_organisations_load_by_code('H930');
+ * echo $term->field_ouh_billing_code[LANGUAGE_NONE][0]['value'];
+ * @endcode
+ *
+ * @param $organisation_code
+ * @return FALSE|object
+ *   Taxonomy term object returned by taxonomy_term_load() or FALSE if fails to
+ *   resolve the organisation code.
+ */
+function uh_taxonomy_organisations_load_by_code($organisation_code) {
+  $select_query = db_select('field_data_field_ouh_code', 'code');
+  $select_query->condition('entity_type', 'taxonomy_term')
+    ->condition('bundle', 'organisations_of_university_of_helsinki')
+    ->condition('field_ouh_code_value', $organisation_code)
+    ->fields('code', array('entity_id'));
+  while($result = $select_query->execute()->fetchAssoc()) {
+    return taxonomy_term_load($result['entity_id']);
+  }
+  return FALSE;
+}
