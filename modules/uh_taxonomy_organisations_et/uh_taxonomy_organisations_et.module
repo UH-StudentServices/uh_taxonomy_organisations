@@ -3,18 +3,3 @@
  * @file
  * Drupal needs this blank file.
  */
-
-/**
- * Implements hook_entity_info_alter().
- *
- * Set translation handler for taxonomy terms.
- */
-function uh_taxonomy_organisations_et_entity_info_alter(&$info) {
-  if (!isset($info['taxonomy_term']['translation']['entity_translation'])) {
-    $info['taxonomy_term']['translation']['entity_translation'] = array(
-      'class' => 'EntityTranslationTaxonomyTermHandler',
-      'base path' => 'taxonomy/term/%taxonomy_term',
-      'edit form' => 'term',
-    );
-  }
-}
