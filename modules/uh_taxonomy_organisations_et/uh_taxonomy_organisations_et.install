@@ -13,9 +13,18 @@
  * Implements hook_install().
  */
 function uh_taxonomy_organisations_et_install() {
+
+  // Ensure that we have entity translation enabled on taxonomy_terms
+  $enabled_types = variable_get('entity_translation_entity_types', array());
+  if (empty($enabled_types['taxonomy_term'])) {
+    $enabled_types['taxonomy_term'] = 'taxonomy_term';
+    variable_set('entity_translation_entity_types', $enabled_types);
+  }
+
+  // Replace taxonomy's name field with name_field
   $entity_type = 'taxonomy_term';
   $bundle = 'organisations_of_university_of_helsinki';
-  if (title_field_replacement_toggle($entity_type, $bundle, 'name')) {
+  if (uh_taxonomy_organisations_et_field_replacement_replace($entity_type, $bundle, 'name')) {
     // When replacing taxonomy name with title field, it needs to process all
     // existing entities and invoke proper hooks to properly process its values.
     // @see title_field_replacement_form_submit()
@@ -28,33 +37,57 @@ function uh_taxonomy_organisations_et_install() {
     }
   }
 
-  // Ensure that we have entity translation enabled on taxonomy_terms
-  $enabled_types = variable_get('entity_translation_entity_types', array());
-  if (empty($enabled_types['taxonomy_term'])) {
-    $enabled_types['taxonomy_term'] = 'taxonomy_term';
-    variable_set('entity_translation_entity_types', $enabled_types);
-  }
 }
 
 /**
  * Implements hook_uninstall().
+ * @see title_field_replacement_toggle()
  */
 function uh_taxonomy_organisations_et_uninstall() {
-  // Toggle replacement. When FALSE is returned, it means that replacement has
-  // been removed.
   $entity_type = 'taxonomy_term';
   $bundle = 'organisations_of_university_of_helsinki';
-  if (title_field_replacement_toggle($entity_type, $bundle, 'name') === FALSE) {
-    // TODO: We assume here that we've no alterations done on default field
-    // table naming.
-    db_delete('field_data_name_field')
-      ->condition('entity_type', $entity_type)
-      ->condition('bundle', $bundle)
-      ->execute();
-    db_delete('field_revision_name_field')
-      ->condition('entity_type', $entity_type)
-      ->condition('bundle', $bundle)
-      ->execute();
-    field_cache_clear();
+  $info = title_field_replacement_info($entity_type, 'name');
+  if ($info) {
+    $field_name = $info['field']['field_name'];
+    $instance = field_info_instance($entity_type, $field_name, $bundle);
+    if (!empty($instance)) {
+      field_delete_instance($instance);
+    }
   }
+}
+
+/**
+ * Helper function for replacing title field. It does same as
+ * title_field_replacement_toggle() function, but it only replaces.
+ *
+ * @param $entity_type
+ * @param $bundle
+ * @param $legacy_field
+ * @return bool
+ * @see title_field_replacement_toggle()
+ */
+function uh_taxonomy_organisations_et_field_replacement_replace($entity_type, $bundle, $legacy_field) {
+  $info = title_field_replacement_info($entity_type, $legacy_field);
+  if (!$info) {
+    return FALSE;
+  }
+
+  $field_name = $info['field']['field_name'];
+  $instance = field_info_instance($entity_type, $field_name, $bundle);
+
+  if (empty($instance)) {
+    $options = variable_get('title_' . $entity_type, array());
+    $field = field_info_field($field_name);
+    if (empty($field)) {
+      field_create_field($info['field']);
+    }
+    $info['instance']['entity_type'] = $entity_type;
+    $info['instance']['bundle'] = $bundle;
+    $info['instance']['settings']['hide_label']['page'] = isset($options['hide_label']['page']) ? $options['hide_label']['page'] : FALSE;
+    $info['instance']['settings']['hide_label']['entity'] = isset($options['hide_label']['entity']) ? $options['hide_label']['entity'] : FALSE;
+    field_create_instance($info['instance']);
+    return TRUE;
+  }
+
+  return FALSE;
 }
