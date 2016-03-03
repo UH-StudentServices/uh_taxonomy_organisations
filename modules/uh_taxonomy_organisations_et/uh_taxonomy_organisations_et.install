@@ -35,3 +35,26 @@ function uh_taxonomy_organisations_et_install() {
     variable_set('entity_translation_entity_types', $enabled_types);
   }
 }
+
+/**
+ * Implements hook_uninstall().
+ */
+function uh_taxonomy_organisations_et_uninstall() {
+  // Toggle replacement. When FALSE is returned, it means that replacement has
+  // been removed.
+  $entity_type = 'taxonomy_term';
+  $bundle = 'organisations_of_university_of_helsinki';
+  if (title_field_replacement_toggle($entity_type, $bundle, 'name') === FALSE) {
+    // TODO: We assume here that we've no alterations done on default field
+    // table naming.
+    db_delete('field_data_name_field')
+      ->condition('entity_type', $entity_type)
+      ->condition('bundle', $bundle)
+      ->execute();
+    db_delete('field_revision_name_field')
+      ->condition('entity_type', $entity_type)
+      ->condition('bundle', $bundle)
+      ->execute();
+    field_cache_clear();
+  }
+}
