@@ -1,0 +1,30 @@
+<?php
+/**
+ * @file
+ * This is installation module file for "University of Helsinki, Organisations
+ * ET" module.
+ *
+ * @license GPL, or GNU General Public License, version 3
+ * @license http://opensource.org/licenses/GPL-3.0
+ * @see README.md how to contribute to this project
+ */
+
+/**
+ * Implements hook_install().
+ */
+function uh_taxonomy_organisations_et_install() {
+  $entity_type = 'taxonomy_term';
+  $bundle = 'organisations_of_university_of_helsinki';
+  if (title_field_replacement_toggle($entity_type, $bundle, 'name')) {
+    // When replacing taxonomy name with title field, it needs to process all
+    // existing entities and invoke proper hooks to properly process its values.
+    // @see title_field_replacement_form_submit()
+    // @see title_field_replacement_init()
+    $vocabulary = taxonomy_vocabulary_machine_name_load($bundle);
+    $terms = taxonomy_term_load_multiple(array(), array('vid' => $vocabulary->vid));
+    foreach ($terms as $term) {
+      field_attach_presave($entity_type, $term);
+      field_attach_update($entity_type, $term);
+    }
+  }
+}
