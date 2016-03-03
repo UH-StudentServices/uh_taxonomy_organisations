@@ -27,4 +27,11 @@ function uh_taxonomy_organisations_et_install() {
       field_attach_update($entity_type, $term);
     }
   }
+
+  // Ensure that we have entity translation enabled on taxonomy_terms
+  $enabled_types = variable_get('entity_translation_entity_types', array());
+  if (empty($enabled_types['taxonomy_term'])) {
+    $enabled_types['taxonomy_term'] = 'taxonomy_term';
+    variable_set('entity_translation_entity_types', $enabled_types);
+  }
 }
