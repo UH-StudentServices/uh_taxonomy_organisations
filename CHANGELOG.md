@@ -1,6 +1,6 @@
 # Changelog
 
-## 7.x-1.x
+## 7.x-1.1
 * Added function for loading taxonomy terms by given organisation code, designed
   to be used by another modules
 * Added support for using taxonomy terms as entity translated entities

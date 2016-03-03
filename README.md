@@ -2,7 +2,7 @@
 
 This is a Drupal 7 module for providing taxonomy vocabulary of organisations of [University of Helsinki](http://www.helsinki.fi).
 
-## Latest changes
+## New in 7.x-1.1
 * Added function for loading taxonomy terms by given organisation code, designed
   to be used by another modules
 * Added support for using taxonomy terms as entity translated entities
