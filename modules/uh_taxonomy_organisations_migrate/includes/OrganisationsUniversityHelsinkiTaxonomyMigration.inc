@@ -48,6 +48,12 @@ class OrganisationsUniversityHelsinkiTaxonomyMigration extends Migration {
 
     // Set field mapping
     $this->addFieldMapping('name', 'name_en');
+    if (module_exists('uh_taxonomy_organisations_et')) {
+      // Create multilingual field mapping when uh_taxonomy_organisations_et
+      // module is enabled. The source field 'name' will be computed in
+      // prepareRow() method.
+      $this->addFieldMapping('name_field', 'name')->arguments(array('language' => self::getEnabledLanguages()));
+    }
     $this->addFieldMapping('field_ouh_code', 'code');
     $this->addFieldMapping('field_ouh_code:language')->defaultValue(LANGUAGE_NONE);
     $this->addFieldMapping('field_ouh_type', 'type');
@@ -61,5 +67,78 @@ class OrganisationsUniversityHelsinkiTaxonomyMigration extends Migration {
     // These fields are not migrated
     $this->addUnmigratedDestinations(array('name_fi', 'name_sv', 'description', 'parent_name', 'format', 'weight', 'path'));
 
+  }
+
+  /**
+   * Prepare row by creating multilingual fields from given preset returned by
+   * self::getMultingualFields().
+   *
+   * @param $row
+   *  Object containing raw source data.
+   * @return bool
+   *  TRUE to process this row, FALSE to have the source skip it.
+   * @see self::getMultingualFields()
+   * @see self::getEnabledLanguages()
+   */
+  public function prepareRow($row) {
+    if (module_exists('uh_taxonomy_organisations_et')) {
+      foreach (self::getMultilingualFields() as $field) {
+        $row->$field = array();
+        foreach (self::getEnabledLanguages() as $language) {
+          $source_field_name = self::getMultilingualSourceFieldName($field, $language);
+          $row->{$field}[$language] = NULL;
+          if (isset($row->$source_field_name)) {
+            $row->{$field}[$language] = $row->$source_field_name;
+          }
+        }
+      }
+    }
+    return parent::prepareRow($row);
+  }
+
+  /**
+   * Returns a collection of enabled languages when locale module is enabled. If
+   * module isn't enabled, then return array having one language (active
+   * language).
+   *
+   * @return array
+   */
+  static function getEnabledLanguages() {
+    if (function_exists('locale_language_list')) {
+      return array_values(locale_language_list('language'));
+    }
+    global $language;
+    return array($language->language);
+  }
+
+  /**
+   * Assembles an expected field name for given field and language.
+   *
+   * Examples of expected returns:
+   * +----------------+------------+------------------+
+   * | $field         | $langauge  | return           |
+   * +----------------+------------+------------------+
+   * | 'name'         | 'fi'       | 'name_fi'        |
+   * | 'name'         | 'sv'       | 'name_sv'        |
+   * | 'description'  | 'fi'       | 'description_fi' |
+   * | 'some'         | 'en'       | 'some_en'        |
+   * +----------------+------------+------------------+
+   *
+   * @param $field
+   * @param $language
+   * @return string
+   */
+  static function getMultilingualSourceFieldName($field, $language) {
+    return $field . '_' . $language;
+  }
+
+  /**
+   * Gets list of supported multilingual fields. At the time of writing, it's
+   * only one field "name".
+   *
+   * @return array
+   */
+  static function getMultilingualFields() {
+    return array('name');
   }
 }
