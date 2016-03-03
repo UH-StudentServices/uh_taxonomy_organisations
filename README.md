@@ -4,7 +4,8 @@ This is a Drupal 7 module for providing taxonomy vocabulary of organisations of 
 
 ## Latest changes
 * Added function for loading taxonomy terms by given organisation code, designed
-  to be used by another modules.
+  to be used by another modules
+* Added support for using taxonomy terms as entity translated entities
 
 See more changes in [CHANGELOG.md](CHANGELOG.md).
 
