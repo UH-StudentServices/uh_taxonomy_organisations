@@ -47,7 +47,7 @@ class OrganisationsUniversityHelsinkiTaxonomyMigration extends Migration {
     $this->destination = new TaxonomyMigrateDestinationTerm('organisations_of_university_of_helsinki');
 
     // Set field mapping
-    $this->addFieldMapping('name', 'name_en');
+    $this->addFieldMapping('name', 'name_en')->defaultValue('Untitled');
     if (module_exists('uh_taxonomy_organisations_et')) {
       // Create multilingual field mapping when uh_taxonomy_organisations_et
       // module is enabled. The source field 'name' will be computed in

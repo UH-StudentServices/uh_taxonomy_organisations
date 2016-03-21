@@ -3,6 +3,8 @@
 ## 7.x-dev
 * Migrate: Use track_changes feature, to avoid repeatedly import same content
 * Migrate: Added possibility to use variable to define JSON source path
+* Migrate: Fixed migration error "Taxonomy term name is required" when english
+  name for organisation is missing
 
 ## 7.x-1.1
 * Added function for loading taxonomy terms by given organisation code, designed
