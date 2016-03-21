@@ -31,7 +31,7 @@ class OrganisationsUniversityHelsinkiTaxonomyMigration extends Migration {
       MigrateDestinationTerm::getKeySchema()
     );
     $this->source = new MigrateSourceJSON(
-      'https://od.helsinki.fi/orgrek/opetus.json',
+      variable_get('uh_taxonomy_organisations_migrate_source_path', 'https://od.helsinki.fi/orgrek/opetus.json'),
       'id',
       array(
         'id' => 'Organisation ID',

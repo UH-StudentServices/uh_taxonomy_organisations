@@ -1,0 +1,16 @@
+<?php
+/**
+ * @file
+ * Takes care of modules' uninstallation tasks.
+ *
+ * @license GPL, or GNU General Public License, version 3
+ * @license http://opensource.org/licenses/GPL-3.0
+ * @see README.md how to contribute to this project
+ */
+
+/**
+ * Implements hook_uninstall().
+ */
+function uh_taxonomy_organisations_migrate_uninstall() {
+  variable_del('uh_taxonomy_organisations_migrate_source_path');
+}
