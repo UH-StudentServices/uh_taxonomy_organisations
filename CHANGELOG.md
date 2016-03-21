@@ -1,5 +1,8 @@
 # Changelog
 
+## 7.x-dev
+* Use track_changes feature, to avoid repeatedly import same content
+
 ## 7.x-1.1
 * Added function for loading taxonomy terms by given organisation code, designed
   to be used by another modules

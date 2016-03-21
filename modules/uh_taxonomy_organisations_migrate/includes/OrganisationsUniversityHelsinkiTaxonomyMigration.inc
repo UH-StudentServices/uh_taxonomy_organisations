@@ -42,7 +42,7 @@ class OrganisationsUniversityHelsinkiTaxonomyMigration extends Migration {
         'billing_code' => 'Billing code of organisation',
         'parent_id' => 'Parent ID of organisation this belongs to.',
       ),
-      array('reader_class' => 'OrganisationJSONReader')
+      array('reader_class' => 'OrganisationJSONReader', 'track_changes' => TRUE)
     );
     $this->destination = new TaxonomyMigrateDestinationTerm('organisations_of_university_of_helsinki');
 
