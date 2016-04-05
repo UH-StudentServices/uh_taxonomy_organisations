@@ -13,8 +13,22 @@
  * Class OrganisationsUniversityHelsinkiTaxonomyMigration
  */
 class OrganisationsUniversityHelsinkiTaxonomyMigration extends Migration {
-  public function __construct() {
+
+  /**
+   * If TRUE, migration will delete terms that are orphan. If organisation has
+   * disappeared from source JSON and we have imported it before, we consider
+   * the term to be orphan.
+   *
+   * @var bool
+   */
+  private $perform_post_cleanup;
+
+  public function __construct($arguments = array()) {
     parent::__construct();
+
+    // Specify if we want to perform an cleanup of organisation terms after
+    // import has been done.
+    $this->perform_post_cleanup = (isset($arguments['perform_post_cleanup']) && $arguments['perform_post_cleanup'] === TRUE);
 
     // Describe this migration, mapping table, source and destination
     $this->description = 'Migrates "Organisations of University of Helsinki" terms from REST API backend.';
@@ -94,6 +108,71 @@ class OrganisationsUniversityHelsinkiTaxonomyMigration extends Migration {
       }
     }
     return parent::prepareRow($row);
+  }
+
+  /**
+   * Override of Migration::postImport()
+   */
+  public function postImport() {
+    parent::postImport();
+    // If we have set post clean up to be performed, then go for it..
+    if ($this->perform_post_cleanup === TRUE) {
+      $orphan_tids = $this->getOrphanTerms();
+      foreach ($orphan_tids as $tid) {
+        taxonomy_term_delete($tid);
+      }
+    }
+  }
+
+  /**
+   * Gets orphan terms from destination vocabulary, that has been previsouly
+   * imported, but was not anymore in the source.
+   *
+   * @return array
+   */
+  private function getOrphanTerms() {
+    $tids = array();
+    $vocabulary = taxonomy_vocabulary_machine_name_load($this->destination->getBundle());
+    if (!empty($vocabulary->vid)) {
+      // We sniff this from two sources and merge them as orphan terms.
+      $needing_update = $this->getTidsNeedingUpdate($vocabulary->vid);
+      $missing_map_row = $this->getTidsMissingMapRow($vocabulary->vid);
+      $tids = array_merge($needing_update, $missing_map_row);
+    }
+    return $tids;
+  }
+
+  /**
+   * Returns set of destination IDs from mapping that needed updating, but never
+   * got updated during import process. This happens usually when the source did
+   * not had it in the source list.
+   *
+   * @param $vid
+   * @return array
+   */
+  private function getTidsNeedingUpdate($vid) {
+    // TODO
+    return array();
+  }
+
+  /**
+   * Returns set of term IDs that exists in the vocabulary, but has no map row
+   * entry. This can happen for many reasons, like when creating the term
+   * manually from UI or by getting created by another migration.
+   *
+   * @param $vid
+   * @return array
+   */
+  private function getTidsMissingMapRow($vid) {
+    $tids = array();
+    $terms = taxonomy_get_tree($vid);
+    foreach ($terms as $term) {
+      $found = $this->getMap()->getRowByDestination(array($term->tid));
+      if (!$found) {
+        $tids[] = $term->tid;
+      }
+    }
+    return $tids;
   }
 
   /**
