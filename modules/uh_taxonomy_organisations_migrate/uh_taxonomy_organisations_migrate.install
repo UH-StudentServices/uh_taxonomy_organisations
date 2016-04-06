@@ -15,3 +15,51 @@ function uh_taxonomy_organisations_migrate_uninstall() {
   variable_del('uh_taxonomy_organisations_migrate_source_path');
   variable_del('uh_taxonomy_organisations_migrate_needs_update_max_count');
 }
+
+/**
+ * Update schema field type of source key of mapping table and convert prior IDs
+ * to organisation codes.
+ */
+function uh_taxonomy_organisations_migrate_update_7001() {
+
+  // Change schema
+  $migrate_map_table = 'migrate_map_organisationsuniversityhelsinkitaxonomy';
+  $new_field = array(
+    'type' => 'varchar',
+    'length' => '32',
+    'not null' => TRUE,
+    'description' => 'Organisation code',
+  );
+  db_change_field($migrate_map_table, 'sourceid1', 'sourceid1', $new_field);
+
+  // Find out organisation codes for each id
+  $query = db_select($migrate_map_table, 'm')->fields('m')->execute();
+  $convert = array();
+  while ($item = $query->fetchAssoc()) {
+    $term = taxonomy_term_load($item['destid1']);
+    if ($term) {
+      $field_ouh_code = field_get_items('taxonomy_term', $term, 'field_ouh_code');
+      if (!empty($field_ouh_code[0]['value'])) {
+        $convert[$item['sourceid1']] = array(
+          'sourceid1' => $field_ouh_code[0]['value'],
+          'destid1' => $item['destid1'],
+          'needs_update' => $item['needs_update'],
+          'rollback_action' => $item['rollback_action'],
+          'last_imported' => $item['last_imported'],
+          'hash' => $item['hash'],
+        );
+      }
+    }
+    else {
+      watchdog('uh_taxonomy_organisations_migrate', 'Could not find organisation code for id @id', array('@id' => $item['sourceid1']), WATCHDOG_ERROR);
+    }
+  }
+
+  // Truncate map table and insert rows with new values. We can not update each
+  // row, because new value may violate integrity for sourceid1 field.
+  db_truncate($migrate_map_table)->execute();
+  foreach ($convert as $from => $values) {
+    db_insert($migrate_map_table)->fields($values)->execute();
+  }
+
+}

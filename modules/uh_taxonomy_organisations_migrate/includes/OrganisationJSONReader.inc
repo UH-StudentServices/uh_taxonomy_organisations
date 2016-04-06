@@ -122,25 +122,25 @@ class OrganisationJSONReader extends MigrateJSONReader {
    *
    * @param $organisations
    * @param $organisation
-   * @param null $parent_id
+   * @param null $parent_code
    */
-  static function flattenStructure(&$organisations, $organisation, $parent_id = NULL) {
+  static function flattenStructure(&$organisations, $organisation, $parent_code = NULL) {
 
     // Copy children if exists and then unset them for push
     $children = array();
-    if (isset($organisation->id) && !empty($organisation->children)) {
+    if (isset($organisation->code) && !empty($organisation->children)) {
       $children = $organisation->children;
       unset($organisation->children);
     }
 
-    // Now push this specific organisation with given parent id
-    $organisation->parent_id = $parent_id;
+    // Now push this specific organisation with given parent code
+    $organisation->parent_code = $parent_code;
     array_push($organisations, $organisation);
 
     // Now deal with the children if any
     if (!empty($children)) {
       foreach ($children as $child) {
-        self::flattenStructure($organisations, $child, $organisation->id);
+        self::flattenStructure($organisations, $child, $organisation->code);
       }
     }
 

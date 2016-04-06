@@ -35,18 +35,18 @@ class OrganisationsUniversityHelsinkiTaxonomyMigration extends Migration {
     $this->map = new MigrateSQLMap(
       $this->machineName,
       array(
-        'id' => array(
-          'type' => 'int',
-          'unsigned' => TRUE,
+        'code' => array(
+          'type' => 'varchar',
+          'length' => '32',
           'not null' => TRUE,
-          'description' => 'Organisation ID',
+          'description' => 'Organisation code',
         )
       ),
       MigrateDestinationTerm::getKeySchema()
     );
     $this->source = new MigrateSourceJSON(
       variable_get('uh_taxonomy_organisations_migrate_source_path', 'https://od.helsinki.fi/orgrek/opetus.json'),
-      'id',
+      'code',
       array(
         'id' => 'Organisation ID',
         'code' => 'Organisation code',
@@ -54,7 +54,7 @@ class OrganisationsUniversityHelsinkiTaxonomyMigration extends Migration {
         'type' => 'Type of organisation',
         'abbreviation' => 'Abbreviation of organisation',
         'billing_code' => 'Billing code of organisation',
-        'parent_id' => 'Parent ID of organisation this belongs to.',
+        'parent_code' => 'Parent code of organisation this belongs to.',
       ),
       array('reader_class' => 'OrganisationJSONReader', 'track_changes' => TRUE)
     );
@@ -76,7 +76,7 @@ class OrganisationsUniversityHelsinkiTaxonomyMigration extends Migration {
     $this->addFieldMapping('field_ouh_abbreviation:language')->defaultValue(LANGUAGE_NONE);
     $this->addFieldMapping('field_ouh_billing_code', 'billing_code');
     $this->addFieldMapping('field_ouh_billing_code:language')->defaultValue(LANGUAGE_NONE);
-    $this->addFieldMapping('parent', 'parent_id')->sourceMigration($this->getMachineName());
+    $this->addFieldMapping('parent', 'parent_code')->sourceMigration($this->getMachineName());
 
     // These fields are not migrated
     $this->addUnmigratedDestinations(array('name_fi', 'name_sv', 'description', 'parent_name', 'format', 'weight', 'path'));

@@ -6,6 +6,7 @@
 * Migrate: Added possibility to use variable to define JSON source path
 * Migrate: Fixed migration error "Taxonomy term name is required" when english
   name for organisation is missing
+* Migrate: Use organisation codes for mapping purposes (issue #3)
 
 ## 7.x-1.1
 * Added function for loading taxonomy terms by given organisation code, designed
