@@ -27,6 +27,34 @@ $term = uh_taxonomy_organisations_load_by_code('H930');
 echo $term->field_ouh_billing_code[LANGUAGE_NONE][0]['value'];
 ```
 
+## Submodules
+Main module contains two optional submodules.
+
+### University of Helsinki, Organisations ET
+Brings support for using entity translation / field translations on taxonomy
+terms.
+
+### University of Helsinki, Organisations Migrate
+Allows you to import the organisations from the JSON source. Enable module and
+register the migration, then perform import.
+
+You have option to also perform an cleanup after import if you're planning to
+perform import periodacally by altering the migration definition:
+
+```php
+/**
+ * Implements hook_migrate_api_alter().
+ */
+function MYMODULE_migrate_api_alter(array &$info) {
+  if (isset($info['uh_taxonomy_organisations_migrate']['migrations']['OrganisationsUniversityHelsinkiTaxonomy'])) {
+    $info['uh_taxonomy_organisations_migrate']['migrations']['OrganisationsUniversityHelsinkiTaxonomy']['arguments']['perform_post_cleanup'] = TRUE;
+  }
+}
+```
+
+Note that you might need to re-register migration if alteration gets in place
+after original registration.
+
 ## Questions
 Please post your question to doo-projekti@helsinki.fi
 

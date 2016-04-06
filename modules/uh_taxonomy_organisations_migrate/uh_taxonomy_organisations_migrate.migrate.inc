@@ -18,6 +18,7 @@ function uh_taxonomy_organisations_migrate_migrate_api() {
     'migrations' => array(
       'OrganisationsUniversityHelsinkiTaxonomy' => array(
         'class_name' => 'OrganisationsUniversityHelsinkiTaxonomyMigration',
+        'arguments' => array('perform_post_cleanup' => FALSE),
       ),
     ),
   );
