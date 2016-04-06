@@ -135,7 +135,7 @@ class OrganisationsUniversityHelsinkiTaxonomyMigration extends Migration {
     $vocabulary = taxonomy_vocabulary_machine_name_load($this->destination->getBundle());
     if (!empty($vocabulary->vid)) {
       // We sniff this from two sources and merge them as orphan terms.
-      $needing_update = $this->getTidsNeedingUpdate($vocabulary->vid);
+      $needing_update = $this->getTidsMissingNeedsUpdate();
       $missing_map_row = $this->getTidsMissingMapRow($vocabulary->vid);
       $tids = array_merge($needing_update, $missing_map_row);
     }
@@ -143,16 +143,39 @@ class OrganisationsUniversityHelsinkiTaxonomyMigration extends Migration {
   }
 
   /**
-   * Returns set of destination IDs from mapping that needed updating, but never
-   * got updated during import process. This happens usually when the source did
-   * not had it in the source list.
+   * Returns set of destination IDs from mapping that needed updating and does
+   * not exist anymore in Drupal. This happens usually when the source did not
+   * had it in the source list.
    *
-   * @param $vid
    * @return array
    */
-  private function getTidsNeedingUpdate($vid) {
-    // TODO
-    return array();
+  private function getTidsMissingNeedsUpdate() {
+    $tids = array();
+
+    // Get all items that needs updating, but also ensure that they actually do
+    // not exist, before returning the list.
+    $maximum_count = variable_get('uh_taxonomy_organisations_migrate_needs_update_max_count', 1000);
+    $rows = $this->getMap()->getRowsNeedingUpdate($maximum_count);
+    if (count($rows) > 0) {
+
+      // Tids that needs updating
+      $tids = array_column($rows, 'destid1');
+
+      // Load terms that needs update and get list of tids of them
+      $found_terms = taxonomy_term_load_multiple($tids);
+      $found_tids = array_map(function($found_term) {
+        return $found_term->tid;
+      }, $found_terms);
+
+      // Detect items from $tids from $found_tids and then load their keys so we
+      // can unset them from the $tids
+      $found_items = array_intersect($tids, $found_tids);
+      $found_keys = array_keys($found_items);
+      foreach ($found_keys as $found_key) {
+        unset($tids[$found_key]);
+      }
+    }
+    return $tids;
   }
 
   /**

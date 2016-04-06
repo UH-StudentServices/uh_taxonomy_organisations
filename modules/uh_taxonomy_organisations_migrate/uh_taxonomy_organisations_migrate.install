@@ -13,4 +13,5 @@
  */
 function uh_taxonomy_organisations_migrate_uninstall() {
   variable_del('uh_taxonomy_organisations_migrate_source_path');
+  variable_del('uh_taxonomy_organisations_migrate_needs_update_max_count');
 }
