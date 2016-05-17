@@ -143,9 +143,8 @@ class OrganisationsUniversityHelsinkiTaxonomyMigration extends Migration {
   }
 
   /**
-   * Returns set of destination IDs from mapping that needed updating and does
-   * not exist anymore in Drupal. This happens usually when the source did not
-   * had it in the source list.
+   * Returns a list of destination IDs from mapping that needs updating but does
+   * not exist anymore in Drupal.
    *
    * @return array
    */
