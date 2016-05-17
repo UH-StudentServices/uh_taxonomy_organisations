@@ -2,6 +2,7 @@
 
 ## 7.x-dev
 * Migrate: Added support for cleaning up orphan organisation terms after import
+  with a optional thresholding feature
 * Migrate: Use track_changes feature, to avoid repeatedly import same content
 * Migrate: Added possibility to use variable to define JSON source path
 * Migrate: Fixed migration error "Taxonomy term name is required" when english

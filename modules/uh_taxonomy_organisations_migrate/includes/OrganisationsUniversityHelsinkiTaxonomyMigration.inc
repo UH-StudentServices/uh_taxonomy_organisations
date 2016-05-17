@@ -23,12 +23,31 @@ class OrganisationsUniversityHelsinkiTaxonomyMigration extends Migration {
    */
   private $perform_post_cleanup;
 
+  /**
+   * Configuration of the migration that enables threshold filtering. This can
+   * be given as argument of the migration.
+   *
+   * @var bool
+   */
+  private $threshold_filtering_enabled;
+
   public function __construct($arguments = array()) {
     parent::__construct();
 
     // Specify if we want to perform an cleanup of organisation terms after
     // import has been done.
     $this->perform_post_cleanup = (isset($arguments['perform_post_cleanup']) && $arguments['perform_post_cleanup'] === TRUE);
+
+    // Specify if we want to do threshold filtering determining whether to
+    // perform the clean up or not.
+    $this->threshold_filtering_enabled = (isset($arguments['threshold_filtering_enabled']) && $arguments['threshold_filtering_enabled'] === TRUE);
+
+    // It doesn't make sense to enable threshold filtering if post cleanup isn't
+    // set to TRUE.
+    if ($this->perform_post_cleanup !== TRUE && $this->threshold_filtering_enabled === TRUE) {
+      // See self::postImport()
+      throw new LogicException('Enabling threshold filtering without performing post cleanup, does not make sense.');
+    }
 
     // Describe this migration, mapping table, source and destination
     $this->description = 'Migrates "Organisations of University of Helsinki" terms from REST API backend.';
@@ -118,10 +137,75 @@ class OrganisationsUniversityHelsinkiTaxonomyMigration extends Migration {
     // If we have set post clean up to be performed, then go for it..
     if ($this->perform_post_cleanup === TRUE) {
       $orphan_tids = $this->getOrphanTerms();
-      foreach ($orphan_tids as $tid) {
-        taxonomy_term_delete($tid);
+      $deletable_count = count($orphan_tids);
+      if ($this->getThresholdFilteringEnabled() === TRUE && $this->exceedsThreshold($deletable_count)) {
+        watchdog('uh_taxonomy_organisations_migrate', 'Deletable count @count exceeded the threshold. Cancelling taxonomy term deletion.', array('@count' => $deletable_count), WATCHDOG_WARNING);
+      }
+      else {
+        foreach ($orphan_tids as $tid) {
+          taxonomy_term_delete($tid);
+        }
       }
     }
+  }
+
+  /**
+   * Returns the value of threshold_filtering_enabled argument.
+   *
+   * @return bool
+   */
+  private function getThresholdFilteringEnabled() {
+    return $this->threshold_filtering_enabled;
+  }
+
+  /**
+   * Determines from the $deletable_count that is it exceeding the threshold.
+   *
+   * An example of truth table, where C1 representing the count of organisations
+   * that source has available and D1 representing the deletable count. Result
+   * is representing whether the threshold is exceeded.
+   *
+   * +------+------+--------+
+   * | C1   | D1   | RESULT |
+   * +------+------+--------+
+   * | 100  | 30   | FALSE  |
+   * | 200  | 30   | FALSE  |
+   * | 320  | 30   | FALSE  |
+   * | 500  | 200  | FALSE  |
+   * | 400  | 200  | FALSE  |
+   * | 200  | 200  | TRUE   |
+   * | 500  | 300  | TRUE   |
+   * | 500  | 1000 | TRUE   |
+   * | 10   | 1000 | TRUE   |
+   * | 10   | 30   | TRUE   |
+   * | 1    | 3    | TRUE   |
+   * | 4    | 1    | FALSE  |
+   * | 1    | 1    | FALSE  |
+   * | 0    | 1    | TRUE   |
+   * +------+------+--------+
+   *
+   * @param $deletable_count
+   * @return bool
+   * @throws Exception
+   */
+  private function exceedsThreshold($deletable_count) {
+
+    // We should not use this method if deletable count is not an integer
+    if (!is_int($deletable_count)) {
+      throw new InvalidArgumentException('Deletable count must be an integer.');
+    }
+
+    // We should not use this feature if we can't get count out from the source
+    $count = $this->sourceCount();
+    if (!is_numeric($count) || $count < 0) {
+      throw new Exception('Could not determine the count');
+    }
+
+    // If needs updating more than half of organisations, then we exceed the
+    // threshold.
+    $threshold = round($count/2);
+
+    return $threshold < $deletable_count;
   }
 
   /**
