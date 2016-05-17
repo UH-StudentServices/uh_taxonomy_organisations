@@ -143,8 +143,8 @@ class OrganisationsUniversityHelsinkiTaxonomyMigration extends Migration {
   }
 
   /**
-   * Returns a list of destination IDs from mapping that needs updating but does
-   * not exist anymore in Drupal.
+   * Returns a list of destination IDs from mapping that needs updating and
+   * term still exists in Drupal.
    *
    * @return array
    */
@@ -158,23 +158,13 @@ class OrganisationsUniversityHelsinkiTaxonomyMigration extends Migration {
     if (count($rows) > 0) {
 
       // Tids that needs updating
-      $tids = array_map(function($row) {
+      $destids = array_map(function($row) {
         return $row->destid1;
       }, $rows);
 
       // Load terms that needs update and get list of tids of them
-      $found_terms = taxonomy_term_load_multiple($tids);
-      $found_tids = array_map(function($found_term) {
-        return $found_term->tid;
-      }, $found_terms);
-
-      // Detect items from $tids from $found_tids and then load their keys so we
-      // can unset them from the $tids
-      $found_items = array_intersect($tids, $found_tids);
-      $found_keys = array_keys($found_items);
-      foreach ($found_keys as $found_key) {
-        unset($tids[$found_key]);
-      }
+      $found_terms = taxonomy_term_load_multiple($destids);
+      $tids = array_keys($found_terms);
     }
     return $tids;
   }
