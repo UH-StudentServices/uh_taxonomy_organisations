@@ -9,3 +9,14 @@
  * @see README.md how to contribute to this project
  */
 
+/**
+ * Implements hook_taxonomy_term_delete().
+ *
+ * Clean up mapping tables when organisation term gets deleted.
+ */
+function uh_taxonomy_organisations_migrate_taxonomy_term_delete($term) {
+  if ($term->vocabulary_machine_name == 'organisations_of_university_of_helsinki') {
+    $migration = new OrganisationsUniversityHelsinkiTaxonomyMigration();
+    $migration->getMap()->deleteDestination(array($term->tid));
+  }
+}
