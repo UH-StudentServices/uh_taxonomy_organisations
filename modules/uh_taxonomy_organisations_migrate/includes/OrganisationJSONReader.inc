@@ -153,7 +153,7 @@ class OrganisationJSONReader extends MigrateJSONReader {
    */
   protected function fetchOrganisation() {
     $content = file_get_contents($this->url);
-    if (($json = json_decode($content))) {
+    if (is_string($content) && ($json = json_decode($content))) {
       return $json;
     }
     else {
