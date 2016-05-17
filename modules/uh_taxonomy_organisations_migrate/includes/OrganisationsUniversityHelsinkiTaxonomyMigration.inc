@@ -158,7 +158,9 @@ class OrganisationsUniversityHelsinkiTaxonomyMigration extends Migration {
     if (count($rows) > 0) {
 
       // Tids that needs updating
-      $tids = array_column($rows, 'destid1');
+      $tids = array_map(function($row) {
+        return $row->destid1;
+      }, $rows);
 
       // Load terms that needs update and get list of tids of them
       $found_terms = taxonomy_term_load_multiple($tids);
