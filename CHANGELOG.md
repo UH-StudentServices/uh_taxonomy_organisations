@@ -1,6 +1,7 @@
 # Changelog
 
 ## 7.x-dev
+* Migrate: Fixed missing destination class (issue #2)
 * Migrate: Added support for minimal cleaning up after import
 * Migrate: Added support for full cleaning up after import
 * Migrate: Added support for thresholding full cleanup

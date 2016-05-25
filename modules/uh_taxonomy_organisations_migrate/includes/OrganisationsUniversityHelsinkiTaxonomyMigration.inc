@@ -87,7 +87,7 @@ class OrganisationsUniversityHelsinkiTaxonomyMigration extends Migration {
       ),
       array('reader_class' => 'OrganisationJSONReader', 'track_changes' => TRUE)
     );
-    $this->destination = new TaxonomyMigrateDestinationTerm('organisations_of_university_of_helsinki');
+    $this->destination = new OrganisationTaxonomyMigrateDestinationTerm('organisations_of_university_of_helsinki');
 
     // Set field mapping
     $this->addFieldMapping('name', 'name_en')->defaultValue('Untitled');
