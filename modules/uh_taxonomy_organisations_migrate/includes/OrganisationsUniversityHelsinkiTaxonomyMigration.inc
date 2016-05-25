@@ -14,18 +14,28 @@
  */
 class OrganisationsUniversityHelsinkiTaxonomyMigration extends Migration {
 
+  const CLEANUP_NONE = 0;
+  const CLEANUP_MINIMAL = 1;
+  const CLEANUP_FULL = 0;
+
   /**
-   * If TRUE, migration will delete terms that are orphan. If organisation has
-   * disappeared from source JSON and we have imported it before, we consider
-   * the term to be orphan.
+   * Determines the behaviour after import has been completed.
    *
-   * @var bool
+   * Type of post cleanup that we want to perform:
+   *   CLEANUP_NONE:    Default. No cleanup will be done after import.
+   *   CLEANUP_MINIMAL: Only orphan terms that got created in the vocabulary
+   *                    without import will get deleted after import.
+   *   CLEANUP_FULL:    Same as CLEANUP_MINIMAL + all terms that does not exist
+   *                    anymore in the source JSON.
+   *
+   * @var self::CLEANUP_NONE|self::CLEANUP_MINIMAL|self::CLEANUP_FULL
    */
   private $perform_post_cleanup;
 
   /**
    * Configuration of the migration that enables threshold filtering. This can
-   * be given as argument of the migration.
+   * be given as argument of the migration. To enable this feature,
+   * perform_post_cleanup option must be set to self::CLEANUP_FULL.
    *
    * @var bool
    */
@@ -34,19 +44,19 @@ class OrganisationsUniversityHelsinkiTaxonomyMigration extends Migration {
   public function __construct($arguments = array()) {
     parent::__construct();
 
-    // Specify if we want to perform an cleanup of organisation terms after
+    // Specify how we want to perform an cleanup of organisation terms after
     // import has been done.
-    $this->perform_post_cleanup = (isset($arguments['perform_post_cleanup']) && $arguments['perform_post_cleanup'] === TRUE);
+    $this->perform_post_cleanup = isset($arguments['perform_post_cleanup']) ? $arguments['perform_post_cleanup'] : self::CLEANUP_NONE;
 
     // Specify if we want to do threshold filtering determining whether to
     // perform the clean up or not.
     $this->threshold_filtering_enabled = (isset($arguments['threshold_filtering_enabled']) && $arguments['threshold_filtering_enabled'] === TRUE);
 
     // It doesn't make sense to enable threshold filtering if post cleanup isn't
-    // set to TRUE.
-    if ($this->perform_post_cleanup !== TRUE && $this->threshold_filtering_enabled === TRUE) {
+    // set to self::CLEANUP_FULL.
+    if ($this->perform_post_cleanup !== self::CLEANUP_FULL && $this->threshold_filtering_enabled === TRUE) {
       // See self::postImport()
-      throw new LogicException('Enabling threshold filtering without performing post cleanup, does not make sense.');
+      throw new LogicException('Enabling threshold filtering without performing full post cleanup, does not make sense.');
     }
 
     // Describe this migration, mapping table, source and destination
@@ -134,8 +144,20 @@ class OrganisationsUniversityHelsinkiTaxonomyMigration extends Migration {
    */
   public function postImport() {
     parent::postImport();
-    // If we have set post clean up to be performed, then go for it..
-    if ($this->perform_post_cleanup === TRUE) {
+
+    // If we perform an minimal cleanup (or full), then handle unidentified
+    // terms. They are terms that can't be found from mapping table.
+    if ($this->perform_post_cleanup === self::CLEANUP_MINIMAL ||
+        $this->perform_post_cleanup === self::CLEANUP_FULL) {
+      foreach ($this->getUnmappedTerms() as $tid) {
+        taxonomy_term_delete($tid);
+      }
+    }
+
+    // If we perform an full cleanup, then handle orphans. Orphan terms are
+    // terms that were created by import, but does not anymore exist in the
+    // source.
+    if ($this->perform_post_cleanup === self::CLEANUP_FULL) {
       $orphan_tids = $this->getOrphanTerms();
       $deletable_count = count($orphan_tids);
       if ($this->getThresholdFilteringEnabled() === TRUE && $this->exceedsThreshold($deletable_count)) {
@@ -209,30 +231,18 @@ class OrganisationsUniversityHelsinkiTaxonomyMigration extends Migration {
   }
 
   /**
-   * Gets orphan terms from destination vocabulary, that has been previsouly
+   * Gets orphan terms from destination vocabulary, that has been previously
    * imported, but was not anymore in the source.
+   *
+   * We detect this by checking which terms needs still updating.
+   *
+   * Note: It is important that you call this *AFTER* the import has been
+   * completed. Otherwise you'll get term ids also that needs update but exists
+   * in the source. @todo how to make this safer?
    *
    * @return array
    */
   private function getOrphanTerms() {
-    $tids = array();
-    $vocabulary = taxonomy_vocabulary_machine_name_load($this->destination->getBundle());
-    if (!empty($vocabulary->vid)) {
-      // We sniff this from two sources and merge them as orphan terms.
-      $needing_update = $this->getTidsMissingNeedsUpdate();
-      $missing_map_row = $this->getTidsMissingMapRow($vocabulary->vid);
-      $tids = array_merge($needing_update, $missing_map_row);
-    }
-    return $tids;
-  }
-
-  /**
-   * Returns a list of destination IDs from mapping that needs updating and
-   * term still exists in Drupal.
-   *
-   * @return array
-   */
-  private function getTidsMissingNeedsUpdate() {
     $tids = array();
 
     // Get all items that needs updating, but also ensure that they actually do
@@ -258,16 +268,18 @@ class OrganisationsUniversityHelsinkiTaxonomyMigration extends Migration {
    * entry. This can happen for many reasons, like when creating the term
    * manually from UI or by getting created by another migration.
    *
-   * @param $vid
    * @return array
    */
-  private function getTidsMissingMapRow($vid) {
+  private function getUnmappedTerms() {
     $tids = array();
-    $terms = taxonomy_get_tree($vid);
-    foreach ($terms as $term) {
-      $found = $this->getMap()->getRowByDestination(array($term->tid));
-      if (!$found) {
-        $tids[] = $term->tid;
+    $vocabulary = taxonomy_vocabulary_machine_name_load($this->destination->getBundle());
+    if (!empty($vocabulary->vid)) {
+      $terms = taxonomy_get_tree($vocabulary->vid);
+      foreach ($terms as $term) {
+        $found = $this->getMap()->getRowByDestination(array($term->tid));
+        if (!$found) {
+          $tids[] = $term->tid;
+        }
       }
     }
     return $tids;

@@ -1,8 +1,9 @@
 # Changelog
 
 ## 7.x-dev
-* Migrate: Added support for cleaning up orphan organisation terms after import
-  with a optional thresholding feature
+* Migrate: Added support for minimal cleaning up after import
+* Migrate: Added support for full cleaning up after import
+* Migrate: Added support for thresholding full cleanup
 * Migrate: Use track_changes feature, to avoid repeatedly import same content
 * Migrate: Added possibility to use variable to define JSON source path
 * Migrate: Fixed migration error "Taxonomy term name is required" when english
