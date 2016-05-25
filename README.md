@@ -3,8 +3,10 @@
 This is a Drupal 7 module for providing taxonomy vocabulary of organisations of [University of Helsinki](http://www.helsinki.fi).
 
 ## New in 7.x-1.x
-* Migrate: Added support for cleaning up orphan organisation terms after import
-  with a optional thresholding feature
+* Migrate: Fixed missing destination class (issue #2)
+* Migrate: Added support for minimal cleaning up after import
+* Migrate: Added support for full cleaning up after import
+* Migrate: Added support for thresholding full cleanup
 * Migrate: Use track_changes feature, to avoid repeatedly import same content
 * Migrate: Added possibility to use variable to define JSON source path
 * Migrate: Fixed migration error "Taxonomy term name is required" when english
