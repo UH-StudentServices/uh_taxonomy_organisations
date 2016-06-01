@@ -10,7 +10,8 @@
 function uh_taxonomy_organisations_field_default_field_instances() {
   $field_instances = array();
 
-  // Exported field_instance: 'taxonomy_term-organisations_of_university_of_helsinki-field_ouh_abbreviation'
+  // Exported field_instance:
+  // 'taxonomy_term-organisations_of_university_of_helsinki-field_ouh_abbreviation'.
   $field_instances['taxonomy_term-organisations_of_university_of_helsinki-field_ouh_abbreviation'] = array(
     'bundle' => 'organisations_of_university_of_helsinki',
     'default_value' => NULL,
@@ -86,7 +87,8 @@ function uh_taxonomy_organisations_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'taxonomy_term-organisations_of_university_of_helsinki-field_ouh_billing_code'
+  // Exported field_instance:
+  // 'taxonomy_term-organisations_of_university_of_helsinki-field_ouh_billing_code'.
   $field_instances['taxonomy_term-organisations_of_university_of_helsinki-field_ouh_billing_code'] = array(
     'bundle' => 'organisations_of_university_of_helsinki',
     'default_value' => NULL,
@@ -162,7 +164,8 @@ function uh_taxonomy_organisations_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'taxonomy_term-organisations_of_university_of_helsinki-field_ouh_code'
+  // Exported field_instance:
+  // 'taxonomy_term-organisations_of_university_of_helsinki-field_ouh_code'.
   $field_instances['taxonomy_term-organisations_of_university_of_helsinki-field_ouh_code'] = array(
     'bundle' => 'organisations_of_university_of_helsinki',
     'default_value' => NULL,
@@ -238,7 +241,8 @@ function uh_taxonomy_organisations_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'taxonomy_term-organisations_of_university_of_helsinki-field_ouh_type'
+  // Exported field_instance:
+  // 'taxonomy_term-organisations_of_university_of_helsinki-field_ouh_type'.
   $field_instances['taxonomy_term-organisations_of_university_of_helsinki-field_ouh_type'] = array(
     'bundle' => 'organisations_of_university_of_helsinki',
     'default_value' => NULL,
