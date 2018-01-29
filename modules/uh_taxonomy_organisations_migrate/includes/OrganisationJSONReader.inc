@@ -75,6 +75,13 @@ class OrganisationJSONReader extends MigrateJSONReader {
   protected $organisations;
 
   /**
+   * Keeps track of flattened organisations by storaging their organisation
+   * codes.
+   * @var array
+   */
+  protected $flattenedOrganisations = array();
+
+  /**
    * Implementation of Iterator::next().
    *
    * This implementation fetches items and aggregate them when needed so that we
@@ -104,7 +111,7 @@ class OrganisationJSONReader extends MigrateJSONReader {
 
       // Construct items as array and flatten the organisation
       $this->organisations = array();
-      self::flattenStructure($this->organisations, $organisation);
+      $this->flattenStructure($this->organisations, $organisation);
 
     }
 
@@ -124,11 +131,22 @@ class OrganisationJSONReader extends MigrateJSONReader {
    * @param $organisation
    * @param null $parent_code
    */
-  static function flattenStructure(&$organisations, $organisation, $parent_code = NULL) {
+  public function flattenStructure(&$organisations, $organisation, $parent_code = NULL) {
+
+    // Validate organisation before flattening
+    if (!$this->validOrganisation($organisation)) {
+      // We couldn't flatten this organisation, unset children for message and
+      // leave a note to log.
+      if (!empty($organisation->children)) {
+        unset($organisation->children);
+      }
+      watchdog('uh_taxonomy_organisations_migrate', 'Organisation (within its children) was not able to be flattened (<pre>!org</pre>).', array('!org' => print_r($organisation, TRUE)), WATCHDOG_WARNING);
+      return;
+    }
 
     // Copy children if exists and then unset them for push
     $children = array();
-    if (isset($organisation->code) && !empty($organisation->children)) {
+    if (!empty($organisation->children)) {
       $children = $organisation->children;
       unset($organisation->children);
     }
@@ -136,14 +154,40 @@ class OrganisationJSONReader extends MigrateJSONReader {
     // Now push this specific organisation with given parent code
     $organisation->parent_code = $parent_code;
     array_push($organisations, $organisation);
+    $this->markFlattened($organisation);
 
     // Now deal with the children if any
     if (!empty($children)) {
       foreach ($children as $child) {
-        self::flattenStructure($organisations, $child, $organisation->code);
+        $this->flattenStructure($organisations, $child, $organisation->code);
       }
     }
 
+  }
+
+  /**
+   * @param $organisation
+   *
+   * @return bool
+   */
+  private function validOrganisation($organisation) {
+    return !empty($organisation->code) && !$this->isFlattened($organisation);
+  }
+
+  /**
+   * @param $organisation
+   *
+   * @return bool
+   */
+  private function isFlattened($organisation) {
+    return in_array($organisation->code, $this->flattenedOrganisations);
+  }
+
+  /**
+   * @param $organisation
+   */
+  private function markFlattened($organisation) {
+    $this->flattenedOrganisations[] = $organisation->code;
   }
 
   /**

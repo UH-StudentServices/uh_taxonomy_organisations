@@ -12,6 +12,7 @@ This is a Drupal 7 module for providing taxonomy vocabulary of organisations of 
 * Migrate: Fixed migration error "Taxonomy term name is required" when english
   name for organisation is missing
 * Migrate: Use organisation codes for mapping purposes (issue #3)
+* Added extra organisation validation along when flattening organisations (issue #7)
 
 See more changes in [CHANGELOG.md](CHANGELOG.md).
 
